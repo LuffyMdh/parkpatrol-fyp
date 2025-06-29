@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page || ParkPatrol</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-teal-300 to-green-400 flex items-center justify-center">
+
+  <div class="bg-white p-10 rounded-lg shadow-md w-full max-w-md">
+    <h2 class="text-2xl font-semibold text-center text-teal-700 mb-8">Login || ParkPatrol</h2>
+
+    <form method="POST" class="space-y-6">
+      <div>
+        <input type="text" placeholder="Username" name="username" class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+      </div>
+      <div>
+        <input type="password" placeholder="Password" name="password" class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+      </div>
+      <div class="flex items-center space-x-2">
+        <input type="checkbox" id="showPassword" class="accent-teal-600">
+        <label for="showPassword" class="text-sm text-gray-700">Show Password</label>
+      </div>
+      <div>
+        <button type="submit" class="w-full bg-teal-700 text-white py-3 rounded-md hover:bg-teal-800 transition">SIGN IN</button>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

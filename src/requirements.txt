@@ -1,0 +1,11 @@
+Flask
+flask-mysqldb
+flask-bcrypt
+flask-login
+Flask-SocketIO
+mysql-connector-python
+ultralytics
+deep_sort_realtime
+opencv-python
+numpy
+redis

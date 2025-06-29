@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}My Site{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  {% block header %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gradient-to-br from-teal-300 to-green-400 flex flex-col">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Navbar -->
+    <nav class="w-full bg-white shadow-md py-4 px-6 flex items-center justify-between relative">
+        <!-- Logo -->
+        <div class="text-xl font-semibold text-teal-700">{% block pageTitle %}Page Title{% endblock %}</div>
+
+        <!-- Centered Menu Links (Desktop) -->
+        <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center space-x-6">
+            <a href="{{ url_for('video') }}"
+                class="{% if request.endpoint == 'video' %}text-teal-700{% else %}text-gray-700{% endif %} font-semibold hover:underline">
+                Live
+            </a>
+
+                <a href="{{ url_for('dashboard') }}"
+                class="{% if request.endpoint == 'dashboard' %}text-teal-700{% else %}text-gray-700{% endif %} font-semibold hover:underline">
+                Dashboard
+            </a>
+
+            <!-- Notification Icon -->
+            <button id="notificationBell" class="text-gray-700 hover:text-teal-600 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V5a2 2 0 10-4 0v.083A6 6 0 004 11v3.159c0 .538-.214 1.055-.595 1.436L2 17h5m8 0a3 3 0 01-6 0h6z"/>
+            </svg>
+            </button>
+        </div>
+
+        <!-- Hamburger for small screen -->
+        <button id="menuToggle" class="md:hidden text-gray-700 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="absolute top-full left-0 w-full bg-white shadow-md md:hidden hidden text-center">
+            <a href="#" class="block px-6 py-3 text-teal-700 font-semibold border-b hover:bg-gray-100">Live</a>
+            <a href="#" class="block px-6 py-3 text-gray-700 font-semibold border-b hover:bg-gray-100">Dashboard</a>
+            <button id="mobileNotification" class="w-full px-6 py-3 text-gray-700 font-semibold hover:bg-gray-100">
+            Notification
+            </button>
+        </div>
+    </nav>
+
+
+  <!-- Notification Sidebar -->
+    <div id="notificationPanel" class="bg-white shadow-lg w-80 transform -translate-x-full transition-transform duration-300 ease-in-out fixed top-0 left-0 h-full z-50 overflow-y-auto">
+        <div class="p-4 border-b border-gray-300 text-lg font-bold text-teal-700">
+            Notifications
+        </div>
+        <ul class="p-4 space-y-4" id="id-notification-list">
+            <!-- <li class="flex justify-between items-start border-b pb-2">
+                <div>
+                <p class="font-semibold text-gray-800">Violation detected</p>
+                <p class="text-sm text-gray-500">1/1/2024 15:00</p>
+                </div>
+                <button class="text-gray-400 hover:text-red-600 text-xl">×</button>
+            </li> -->
+        </ul>
+    </div>
+
+    <div>
+        {% block content %}{% endblock %}
+    </div>
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 z-40 hidden"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        const socket = io("http://127.0.0.1:5000");
+        const notificationId = document.getElementById('id-notification-list');
+
+        socket.on('connect', () => {
+            console.log("Connected to server");
+        });
+
+        socket.on('violation_detected', function(data) {
+            console.log(data)
+
+            const htmlNotification = `
+                <li class="flex justify-between items-start border-b pb-2">
+                    <div>
+                    <p class="font-semibold text-gray-800">Violation detected <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">New</span></p>
+                    <p class="text-sm text-gray-500">${data.timestamp}</p>
+                    </div>
+                </li>`;
+
+            notificationId.insertAdjacentHTML('afterbegin', htmlNotification);
+            
+        });
+
+        fetch('/api/violations')
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(row => {
+                const date = new Date(row.ViolationDate);  // assuming it's like 'Tue, 17 Jun 2025 13:32:21 GMT'
+                const formattedTime = `${String(date.getUTCDate()).padStart(2, '0')}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${date.getUTCFullYear()} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')}`;
+
+
+                const htmlNotification = `
+                                <li class="flex justify-between items-start border-b pb-2">
+                                    <div>
+                                    <p class="font-semibold text-gray-800">Violation detected</p>
+                                    <p class="text-sm text-gray-500">${formattedTime}</p>
+                                    </div>
+                                </li>
+                `;
+
+                notificationId.innerHTML += htmlNotification
+            });
+        });
+    </script>
+</body>
+</html>
